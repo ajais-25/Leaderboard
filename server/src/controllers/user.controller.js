@@ -217,6 +217,11 @@ const getClaimHistory = async (req, res) => {
                                 toUser: { $arrayElemAt: ["$toUser", 0] },
                             },
                         },
+                        {
+                            $sort: {
+                                createdAt: -1,
+                            },
+                        },
                     ],
                 },
             },
