@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../utils/axios";
 
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -14,10 +19,44 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login form submitted:", formData);
+    setError(null); // Clear previous errors
+    setLoading(true);
+
+    try {
+      const response = await api.post("/users/login", formData);
+
+      console.log("Login response:", response.data);
+
+      if (response.data.success) {
+        // Store user data if needed (optional, since we're using httpOnly cookies)
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+
+        // Redirect to home page or dashboard after successful login
+        navigate("/");
+      } else {
+        console.error("Login failed:", response.data.message);
+        setError(response.data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+
+      // Handle different types of errors more specifically
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || "Login failed";
+        setError(errorMessage);
+      } else if (error.request) {
+        // Network error - no response received
+        setError("Network error. Please check if the server is running.");
+      } else {
+        // Other error
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDemoLogin = () => {
@@ -86,6 +125,10 @@ function Login() {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -115,9 +158,10 @@ function Login() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </div>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../utils/axios";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -7,6 +8,10 @@ function Register() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -15,10 +20,40 @@ function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log("Register form submitted:", formData);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await api.post("/users/register", formData);
+
+      console.log("Register response:", response.data);
+
+      if (response.data.success) {
+        // Store user data
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+
+        // Redirect to home page after successful registration
+        navigate("/");
+      } else {
+        setError(response.data.message);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.message || "Registration failed";
+        setError(errorMessage);
+      } else if (error.request) {
+        setError("Network error. Please check if the server is running.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,6 +134,10 @@ function Register() {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
           <div className="flex items-center">
             <input
               id="agree-terms"
@@ -121,9 +160,10 @@ function Register() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </div>
         </form>
