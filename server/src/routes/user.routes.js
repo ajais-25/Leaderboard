@@ -4,6 +4,7 @@ import {
     login,
     logout,
     addUser,
+    getAllUsers,
 } from "../controllers/user.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
 
@@ -16,5 +17,6 @@ router.post("/login", login);
 // Protected routes
 router.post("/logout", authenticateUser, logout);
 router.post("/add", authenticateUser, addUser);
+router.get("/all", authenticateUser, getAllUsers);
 
 export default router;

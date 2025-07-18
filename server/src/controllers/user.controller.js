@@ -153,4 +153,25 @@ const addUser = async (req, res) => {
     }
 };
 
-export { register, login, logout, addUser };
+const getAllUsers = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const users = await AddedUser.find({ userId })
+            .sort({ points: -1 })
+            .select("-__v");
+
+        res.status(200).json({
+            success: true,
+            data: users,
+        });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+export { register, login, logout, addUser, getAllUsers };
