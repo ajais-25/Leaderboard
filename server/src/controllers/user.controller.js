@@ -2,9 +2,9 @@ import { AddedUser } from "../models/addedUser.model.js";
 import { User } from "../models/user.model.js";
 
 const register = async (req, res) => {
-    const { name, email, password, points } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!name || !email || !password || !points) {
+    if (!name || !email || !password) {
         return res.status(400).json({
             success: false,
             message: "All fields are required",
@@ -25,7 +25,6 @@ const register = async (req, res) => {
             name,
             email,
             password,
-            points,
         });
 
         const user = await User.findById(newUser._id).select("-password");
