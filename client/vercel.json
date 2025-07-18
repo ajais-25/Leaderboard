@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    {
+      "source": "/api:path*",
+      "destination": "https://leaderboard-0wkj.onrender.com/api:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
