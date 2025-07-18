@@ -28,8 +28,6 @@ function Register() {
     try {
       const response = await api.post("/users/register", formData);
 
-      console.log("Register response:", response.data);
-
       if (response.data.success) {
         // Store user data
         localStorage.setItem("user", JSON.stringify(response.data.data));

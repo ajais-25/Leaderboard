@@ -27,8 +27,6 @@ function Login() {
     try {
       const response = await api.post("/users/login", formData);
 
-      console.log("Login response:", response.data);
-
       if (response.data.success) {
         // Store user data if needed (optional, since we're using httpOnly cookies)
         localStorage.setItem("user", JSON.stringify(response.data.data));
