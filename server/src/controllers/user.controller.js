@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { AddedUser } from "../models/addedUser.model.js";
 import { User } from "../models/user.model.js";
 
@@ -174,4 +175,71 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-export { register, login, logout, addUser, getAllUsers };
+const getClaimHistory = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const user = await User.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(userId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "claims",
+                    localField: "history",
+                    foreignField: "_id",
+                    as: "history",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "addedusers",
+                                localField: "to",
+                                foreignField: "_id",
+                                as: "toUser",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            name: 1,
+                                            points: 1,
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                pointsClaimed: 1,
+                                createdAt: 1,
+                                toUser: { $arrayElemAt: ["$toUser", 0] },
+                            },
+                        },
+                    ],
+                },
+            },
+        ]);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user[0].history,
+        });
+    } catch (error) {
+        console.error("Error fetching claim history:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+export { register, login, logout, addUser, getAllUsers, getClaimHistory };
