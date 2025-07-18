@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import History from "./pages/History";
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppContent() {
   const location = useLocation();
@@ -24,8 +25,22 @@ function AppContent() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/history" element={<History />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <ToastContainer
         position="top-right"
